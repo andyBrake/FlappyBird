@@ -10,6 +10,7 @@ import javax.swing.ImageIcon;
 
 public class Pipe extends Thread {
 
+	private static final int PIPE_WIDTH = 52;
 	//位置
 	private int x;
 	private int y;
@@ -50,10 +51,10 @@ public class Pipe extends Thread {
 	//移动
 	public void move(){
 		
-		if(GameUI.flag == 0){
+		if(GameUI.flag == GameUI.GAME_INIT){
 			return;
 		}
-		if(x > -52){
+		if(x > -PIPE_WIDTH){  //-52
 			x--;
 		}
 		
@@ -61,8 +62,8 @@ public class Pipe extends Thread {
 	
 	//重置管道位置
 	public void resetPipe(){
-		if(x <= -52){
-			x = 4 * GameUI.d - 52;
+		if(x <= -PIPE_WIDTH){
+			x = 4 * GameUI.d - PIPE_WIDTH;
 			y = new Random().nextInt(322 - GameUI.w) + GameUI.w + 10;
 			isReset = 0;
 		}
@@ -71,7 +72,7 @@ public class Pipe extends Thread {
 	//是否撞到小鸟
 	public boolean isBirdDied(Bird bird){
 		
-		//上面管道的位置
+		//上面管道的位置,4个点分别是左上，左下，右下，右上
 		int[] xpoints1 = {x, x, x + top.getWidth(null), x + top.getWidth(null)};
 		int[] ypoints1 = {y - top.getHeight(null), y, y, y - top.getHeight(null)};
 		
@@ -80,15 +81,16 @@ public class Pipe extends Thread {
 		int[] ypoints2 = {y + GameUI.w, y + GameUI.w + bottom.getHeight(null),
 							y + GameUI.w + bottom.getHeight(null), y + GameUI.w };
 		
-
+		/* 构造上下区间的二维多边形 */
 		Polygon p1 = new Polygon(xpoints1, ypoints1, 4);
 		Polygon p2 = new Polygon(xpoints2, ypoints2, 4);
 		
-		Area a1 = new Area(p1);
-		Area a2 = new Area(p2);
+		//Area a1 = new Area(p1);
+		//Area a2 = new Area(p2);
 		
-		if(a1.intersects(bird.getX(), bird.getY(), 35, 30) || a2.intersects(bird.getX(), bird.getY(), 35, 35)
-															|| bird.getY() > 450){
+		if(p1.intersects(bird.getX(), bird.getY(), 35, 30) 
+		  || p2.intersects(bird.getX(), bird.getY(), 35, 35)
+		  || bird.getY() > 450){
 			return true;
 		}else{
 			return false;
@@ -116,6 +118,7 @@ public class Pipe extends Thread {
 	}
 	
 	//线程
+	@Override
 	public void run(){
 		
 		while(true){

@@ -50,13 +50,13 @@ public class GameStatus {
 	//绘制游戏未开始、进行中、结束的画面
 	public void drawSelf(Graphics g){
 		
-		if(GameUI.flag == 0){
+		if(GameUI.flag == GameUI.GAME_INIT){
 			
 			//游戏未开始
 			g.drawImage(ready,246,80,ready.getWidth(null),ready.getHeight(null),null);
 			g.drawImage(begin,246,200,begin.getWidth(null),begin.getHeight(null),null);
 			
-		}else if(GameUI.flag == 1){
+		}else if(GameUI.flag == GameUI.GAME_RUNNING){
 			
 			//游戏进行中
 			showStartScore(g);

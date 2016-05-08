@@ -28,18 +28,21 @@ public class GameUI extends JFrame implements MouseListener, MouseMotionListener
 	private Pipe[] pipe;
 	private static int score;
 	
-	//管道夹缝宽度 
-	public static final int w = 100;
-	//两个管道之间的宽度
-	public static final int d = 300;
+	//管道夹缝宽度 上下两个pipe的距离
+	public static final int w = 200;
+	//两个管道之间的宽度,两个pipe之间的间距
+	public static final int d = 400;
 	
+	public static final int GAME_INIT = 0;
+	public static final int GAME_RUNNING = 1;
+	public static final int GAME_OVER = 2;
 	/*
 	 * 游戏状态标志
 	 * 0 ： 游戏未开始
 	 * 1 ： 游戏进行中
 	 * 2：  游戏结束
 	 */
-	public static int flag = 0;
+	public static int flag = GameUI.GAME_INIT;
 	
 	//游戏开始时间
 	public static long start = 0;
@@ -51,7 +54,7 @@ public class GameUI extends JFrame implements MouseListener, MouseMotionListener
 	private GameStatus gs;
 	
 	//管道位置
-	private int x = 800;
+	private int x = 1000;
 	private int[] ypoints = { new Random().nextInt(322 - GameUI.w) + GameUI.w + 10,
 							  new Random().nextInt(322 - GameUI.w) + GameUI.w + 10,
 							  new Random().nextInt(322 - GameUI.w) + GameUI.w + 10,
@@ -77,7 +80,8 @@ public class GameUI extends JFrame implements MouseListener, MouseMotionListener
 		// 初始化管道
 		pipe = new Pipe[4];
 		for (int i = 0; i < ypoints.length; i++) {
-			pipe[i] = new Pipe(x + i * GameUI.d, ypoints[i], 7);
+			int randWid = new Random().nextInt(100);
+			pipe[i] = new Pipe(x + i * GameUI.d + randWid, ypoints[i], 7);
 		}
 		
 		// 游戏画面
@@ -93,8 +97,10 @@ public class GameUI extends JFrame implements MouseListener, MouseMotionListener
 		for(int i = 0; i < pipe.length; i++){
 			pipe[i].start();
 		}
+		/* mypanel 类不能多继承thread用的实现runnable接口的方式 */
 		Thread gp = new Thread(gamePanel);
 		gp.start();
+		//gamePanel.start();
 		
 		//设置窗体相关属性
 		add(gamePanel);
@@ -112,7 +118,7 @@ public class GameUI extends JFrame implements MouseListener, MouseMotionListener
 
 	//加分
 	public static void addScore(){
-		if(GameUI.flag == 1){
+		if(GameUI.flag == GameUI.GAME_RUNNING){
 			GameUI.score++;
 		}
 	}
@@ -122,9 +128,18 @@ public class GameUI extends JFrame implements MouseListener, MouseMotionListener
 		GameUI.flag = status;
 	}
 	
+	public static synchronized int getGameFlag()
+	{
+		return GameUI.flag;
+	}
+	
+	public static synchronized void setGameFlag(int flag)
+	{
+		GameUI.flag = flag;
+	}
 
 	@Override
-	public void mouseClicked(MouseEvent e) {
+	public void mouseClicked(MouseEvent e)  {
 		
 		int x = e.getX();
 		int y = e.getY();
@@ -132,23 +147,34 @@ public class GameUI extends JFrame implements MouseListener, MouseMotionListener
 		//将小鸟的状态设置为飞行状态
 		bird.setFlyStatus();
 		
+		if(GameUI.getGameFlag() == GameUI.GAME_RUNNING){
+			return;
+		}
+		
 		/*
 		 * 当游戏结束后，根据点击鼠标的位置
 		 * 来判断是不是点击了重新开始按钮
 		 */
-		if(GameUI.flag == 2){
-			
+		
+		if(GameUI.getGameFlag() == GameUI.GAME_OVER){
+			/*
 			if(x > 225 && x < 381 && y > 400 && y < 493 ){
-				GameUI.flag = 0;
+				GameUI.flag = GameUI.GAME_INIT;
 			}
+			*/
+			System.out.println("rerererer");
+			
+			//GameUI.flag = GameUI.GAME_INIT;
+			GameUI.setGameFlag(GameUI.GAME_INIT);
 			
 			GameUI.score = 0;
 			GameUI.start = System.currentTimeMillis();
 			return;
 		} 
+		System.out.println("runun");
 
 		//将游戏状态设置为游戏进行中
-		GameUI.flag = 1;
+		GameUI.flag = GameUI.GAME_RUNNING;
 		//将声音播放器设置为播放游戏进行中相关的音乐
 		player.setIsPlay(1);
 		

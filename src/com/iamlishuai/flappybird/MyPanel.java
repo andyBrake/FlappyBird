@@ -1,12 +1,9 @@
 package com.iamlishuai.flappybird;
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
 
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JPanel;
 
 public class MyPanel extends JPanel implements Runnable {
@@ -26,7 +23,7 @@ public class MyPanel extends JPanel implements Runnable {
 	
 	//游戏状态
 	private GameStatus gs;
-	private int rp = 1;
+	private boolean rp = true;
 	
 	//构造方法
 	public MyPanel(Bird bird,Pipe[] pipe,GameStatus gs,PlaySounds player){
@@ -53,14 +50,15 @@ public class MyPanel extends JPanel implements Runnable {
 	}
 	
 
+	@Override
 	public void paint(Graphics g){
 		super.paint(g);			
 		
-		if(GameUI.flag == 0){
+		if(GameUI.flag == GameUI.GAME_INIT){
 			bird.reStart();
 		}
 		for(int i = 0; i < pipe.length; i++){
-			if(GameUI.flag == 0){
+			if(GameUI.flag == GameUI.GAME_INIT){
 				pipe[i].reStart();
 			}
 		}
@@ -72,7 +70,7 @@ public class MyPanel extends JPanel implements Runnable {
 			
 			if(pipe[i].isBirdDied(bird)){
 				player.setIsPlay(3);
-				GameUI.flag = 2;
+				GameUI.flag = GameUI.GAME_OVER;
 			};
 			
 			if(pipe[i].isBirdPass(bird)){
@@ -97,15 +95,25 @@ public class MyPanel extends JPanel implements Runnable {
 			
 			long start = System.currentTimeMillis();
 			//当游戏状态变为游戏结束时，只重绘一次(为了显示游戏得分板)
-			if(GameUI.flag == 2){
-				if(rp == 1){
+			if(GameUI.getGameFlag() == GameUI.GAME_OVER){
+				/* 这里需要让渡一下线程，否则flag被另一个线程修改，这个线程无法同步到
+				 * 把Game flag用同步方法操作也可以解决这个问题 */
+				/*
+				try {
+					Thread.sleep(10);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}*/
+				
+				if(rp){
 					repaint();
-					rp = 0;
-				} 
+					rp = false;
+				}
 				continue;
 			}
 			repaint();
-			if(rp == 0) rp = 1;
+			rp = true;
+			
 			long end = System.currentTimeMillis();
 			
 			//确定游戏帧率为60

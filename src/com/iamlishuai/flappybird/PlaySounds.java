@@ -39,6 +39,7 @@ public class PlaySounds extends Thread {
 	}
 	
 	//²¥·ÅÉùÒô
+	@Override
 	public void run(){
 		
 		while(true){
